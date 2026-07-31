@@ -24,6 +24,17 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/show-changed-files-on-stop.js\"",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

@@ -40,12 +40,31 @@ function findUp(startDir, names) {
   }
 }
 
-function localBin(startDir, bin) {
+// Resolves a locally-installed CLI to its own JS entry point, to be run with this
+// same Node binary.
+//
+// Deliberately NOT node_modules/.bin: on Windows that entry is a .cmd shim, and
+// since the CVE-2024-27980 fix Node refuses to spawn .cmd/.bat without a shell —
+// execFileSync throws EINVAL. That throw would surface as a fabricated "the linter
+// flagged issues" message on every single edit. Resolving the real entry from the
+// package's own "bin" field avoids both the shim and any shell-quoting exposure.
+function localCli(startDir, pkg) {
   let dir = path.resolve(startDir);
-  const exe = process.platform === 'win32' ? bin + '.cmd' : bin;
   while (true) {
-    const candidate = path.join(dir, 'node_modules', '.bin', exe);
-    if (fs.existsSync(candidate)) return candidate;
+    const pkgDir = path.join(dir, 'node_modules', pkg);
+    const manifest = path.join(pkgDir, 'package.json');
+    if (fs.existsSync(manifest)) {
+      let bin;
+      try {
+        bin = JSON.parse(fs.readFileSync(manifest, 'utf8')).bin;
+      } catch {
+        return null;
+      }
+      const rel = typeof bin === 'string' ? bin : bin && bin[pkg];
+      if (!rel) return null;
+      const entry = path.join(pkgDir, rel);
+      return fs.existsSync(entry) ? entry : null;
+    }
     const parent = path.dirname(dir);
     if (parent === dir) return null;
     dir = parent;
@@ -84,9 +103,9 @@ function lint(filePath) {
       'eslint.config.js', 'eslint.config.mjs', 'eslint.config.cjs', 'eslint.config.ts',
       '.eslintrc.js', '.eslintrc.cjs', '.eslintrc.json', '.eslintrc.yml', '.eslintrc',
     ]);
-    const bin = localBin(dir, 'eslint');
-    if (!hasConfig || !bin) return null; // no eslint set up in this project yet — skip quietly
-    const r = run(bin, ['--no-color', filePath]);
+    const entry = localCli(dir, 'eslint');
+    if (!hasConfig || !entry) return null; // no eslint set up in this project yet — skip quietly
+    const r = run(process.execPath, [entry, '--no-color', filePath]);
     return !r.ok && r.output ? { linter: 'eslint', output: r.output } : null;
   }
 
@@ -119,9 +138,9 @@ function lint(filePath) {
   }
 
   if (['.css', '.scss'].includes(ext)) {
-    const bin = localBin(dir, 'stylelint');
-    if (!bin) return null;
-    const r = run(bin, [filePath]);
+    const entry = localCli(dir, 'stylelint');
+    if (!entry) return null;
+    const r = run(process.execPath, [entry, filePath]);
     return !r.ok && r.output ? { linter: 'stylelint', output: r.output } : null;
   }
 

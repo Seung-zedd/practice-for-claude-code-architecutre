@@ -53,7 +53,10 @@ test('실행 이후 다시 호출하면 새로운 debounce 주기가 시작된�
   debounced();
   mock.timers.tick(100);
   debounced();
-  mock.timers.tick(100);
+  // 두 번째 주기가 wait 이전에 먼저 터지지 않는지 확인한다
+  mock.timers.tick(99);
+  assert.equal(calls, 1);
+  mock.timers.tick(1);
 
   assert.equal(calls, 2);
 });
@@ -68,4 +71,32 @@ test('cancel()은 대기 중인 호출을 취소한다', () => {
   mock.timers.tick(1000);
 
   assert.equal(calls, 0);
+});
+
+test('cancel() 이후에도 다시 호출하면 정상적으로 동작한다', () => {
+  let calls = 0;
+  const debounced = debounce(() => { calls += 1; }, 100);
+
+  debounced();
+  debounced.cancel();
+  debounced();
+  mock.timers.tick(100);
+
+  // cancel()은 대기 중인 호출만 취소할 뿐, 함수를 영구히 비활성화하지 않는다
+  assert.equal(calls, 1);
+});
+
+test('대기 중인 호출이 없을 때 cancel()을 불러도 예외가 발생하지 않는다', () => {
+  let calls = 0;
+  const debounced = debounce(() => { calls += 1; }, 100);
+
+  // 한 번도 호출하지 않은 상태
+  assert.doesNotThrow(() => { debounced.cancel(); });
+
+  // 이미 실행이 끝난 뒤에도 마찬가지
+  debounced();
+  mock.timers.tick(100);
+  assert.doesNotThrow(() => { debounced.cancel(); });
+
+  assert.equal(calls, 1);
 });

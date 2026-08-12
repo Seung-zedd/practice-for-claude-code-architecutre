@@ -36,5 +36,15 @@
         ]
       }
     ]
+  },
+  "permissions": {
+    "deny": [
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(rm -rf *)",
+      "Bash(git push --force*)",
+      "Read(./.env)",
+      "Write(./.env)"
+    ]
   }
 }

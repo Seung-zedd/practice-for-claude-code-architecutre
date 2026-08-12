@@ -4,7 +4,7 @@
 // not just warned about. Scoped to this project only (registered in this project's own
 // .claude/settings.json, not the shared C:\Users\sdok1\projects container).
 
-const path = require("path");
+import path from "node:path";
 
 const BLOCKED_TOOLS = new Set(["Edit", "Write", "MultiEdit", "NotebookEdit"]);
 const ENV_FILE_PATTERN = /^\.env($|\.)/i;

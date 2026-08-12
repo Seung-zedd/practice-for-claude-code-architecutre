@@ -4,9 +4,9 @@
 
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
-const { execFileSync } = require('child_process');
+import fs from 'node:fs';
+import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 function readStdin() {
   try {

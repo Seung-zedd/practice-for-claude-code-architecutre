@@ -19,6 +19,11 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-curl-command.js\"",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-npm-supply-chain-risk.js\"",
+            "timeout": 5
           }
         ]
       }
@@ -53,8 +58,28 @@
       "Bash(wget *)",
       "Bash(rm -rf *)",
       "Bash(git push --force*)",
+      "Read(.env)",
       "Read(./.env)",
-      "Write(./.env)"
+      "Read(./.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Edit(.env)",
+      "Edit(./.env)",
+      "Edit(./.env.*)",
+      "Edit(**/.env)",
+      "Edit(**/.env.*)",
+      "Write(.env)",
+      "Write(./.env)",
+      "Write(./.env.*)",
+      "Write(**/.env)",
+      "Write(**/.env.*)",
+      "Bash(npm install -g*)",
+      "Bash(npm i -g*)",
+      "Bash(npm install --global*)",
+      "Bash(npx -y*)",
+      "Bash(npx --yes*)",
+      "Bash(npm exec -y*)",
+      "Bash(npm exec --yes*)"
     ]
   }
 }
